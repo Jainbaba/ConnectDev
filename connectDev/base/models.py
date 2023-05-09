@@ -1,0 +1,66 @@
+"""Django Module"""
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+
+class User(AbstractUser):
+    name = models.CharField(max_length=200)
+    email = models.EmailField(unique=True)
+    bio = models.TextField(null=True)
+    avatar = models.ImageField(default="avatar.svg")
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
+
+
+class Topic(models.Model):
+    """Model Class for Topic"""
+
+    name = models.CharField(max_length=200)
+
+    class Meta:
+        """Meta Class to Change attrubite of the Model Class"""
+
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return str(self.name)
+
+
+class Room(models.Model):
+    """Model Class for Room"""
+
+    host = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
+    participants = models.ManyToManyField(
+        User(), related_name="participants", blank=True
+    )
+    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        """Meta Class to Change attrubite of the Model Class"""
+
+        ordering = ["-updated", "-created"]
+
+    def __str__(self) -> str:
+        return str(self.name)
+
+
+class Message(models.Model):
+    """Model Class for Message"""
+
+    user = models.ForeignKey(User(), on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    body = models.TextField()
+    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        """Meta Class to Change attrubite of the Model Class"""
+
+        ordering = ["-updated", "-created"]
+
+    def __str__(self) -> str:
+        return str(self.body)[:50]
